@@ -1,10 +1,22 @@
 import { Construct } from 'constructs';
 import { App, TerraformStack } from 'cdktf';
-import {KubernetesProvider, Namespace, Deployment, Service} from './.gen/providers/kubernetes';
+import {KubernetesProvider, Namespace, CronJob, CronJobConfig, CronJobSpec, Service} from './.gen/providers/kubernetes';
 
-function createDeployment(stack: TerraformStack, appName: string) {
-  const dep = new Deployment(stack, `${appName}-deployment`, {
-    metadata: [{ name: appName }]
+function creasteCronJob(stack: TerraformStack, appName: string) {
+  const  botsNamespace = new Namespace(stack, ' bots', {
+    metadata: [{
+      name: ' bots'
+    }]
+  })
+
+  const cron = new CronJob(stack, `${appName}-cron`, {
+    metadata: [{
+      name: appName,
+      namespace:  botsNamespace.metadata[0].name,
+      labels: {
+        app
+      }
+    }],
   })
 }
 
