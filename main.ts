@@ -8,8 +8,8 @@ function creasteCronJob(stack: TerraformStack, appName: string) {
       name: ' bots'
     }]
   })
-  
-  const metadata = { labels: { "app": appName }}
+
+  const metadata = { labels: { "app": appName } }
   const cron = new CronJob(stack, `${appName}-cron`, {
     metadata: [{
       name: appName,
@@ -17,12 +17,31 @@ function creasteCronJob(stack: TerraformStack, appName: string) {
       ...metadata
     }],
     spec: [{
+      schedule: "0 10 * * 1",
       jobTemplate: [{
-        metadata: [metadata]
+        metadata: [metadata],
         spec: [
           {
-            
-            template: []
+            template: [{
+              metadata: [metadata],
+              spec: [{
+                container: [{
+                  name: "devnews-cli",
+                  args: ["--article-quantity", "10"],
+                  image: "dominikus1910/devnewscli:v1.3.0",
+                  imagePullPolicy: "Always",
+                  env: [
+                    { name: "MicrosoftTeams__Enabled", value: "false" },
+                    { name: "ConnectionStrings__Discord", valueFrom: [{ secretKeyRef: [{ key: "devnews", name: "discord" }] }] },
+                    { name: "ConnectionStrings__Articles", valueFrom: [{ secretKeyRef: [{ key: "devnews", name: "articles" }] }] }
+                  ],
+
+                }],
+                restartPolicy: "OnFailure",
+                imagePullSecrets: [{ name: "dockerhub" }]
+              }],
+
+            }]
           }
         ]
       }]
